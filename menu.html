@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Mahlatse's Dine Restaurant - Menu & Order</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="about.html">About Us</a>
+      </div>
+
+      <div class="right-icons">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search our menu">
+        </div>
+        <i class="fa-solid fa-utensils"></i>
+        <div class="cart-icon">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>0</span>
+        </div>
+      </div>
+    </nav>
+
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <h2 class="section-heading">Our Menu & Place Order</h2>
+
+    <div class="order-container">
+
+      <!-- ORDER FORM -->
+      <form id="orderForm" autocomplete="off">
+        <label for="item" class="label-bold">Select Item:</label>
+        <select id="item" name="item" required>
+          <option value="" disabled selected>Select an item</option>
+          <option value="Bread" data-price="35">Bread - R35.00</option>
+          <option value="Cold Drinks" data-price="25">Cold Drinks - R25.00</option>
+          <option value="Cake" data-price="65">Cake - R65.00</option>
+          <option value="Pie" data-price="75">Pie - R75.00</option>
+        </select>
+
+        <label for="quantity" class="label-bold">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" min="1" value="1" required />
+
+        <label for="name" class="label-bold">Your Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name" required />
+
+        <label for="phone" class="label-bold">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required pattern="[0-9]{10,15}"
+          title="Please enter a valid phone number" />
+
+        <button type="submit" class="btn-primary">Add to Order Slip</button>
+      </form>
+
+      <!-- ORDER SLIP -->
+      <aside class="order-slip">
+        <h3>Your Order Slip</h3>
+        <ul id="orderItems">
+          <li>No items added yet.</li>
+        </ul>
+        <div class="total" id="orderTotal">Total: R0.00</div>
+        <button id="submitOrderBtn" disabled>Submit Order</button>
+      </aside>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 Mahlatse's Dine Restaurant. All Rights Reserved.</p>
+  </footer>
+
+
+
+
+
+  <script>
+  // Function 1: Validate customer input
+  function validateCustomer(name, phone) {
+    if (name.trim() === "" || phone.trim() === "") {
+      alert("Please enter both your name and phone number.");
+      return false;
+    }
+    if (!/^\d{10,15}$/.test(phone)) {
+      alert("Phone number must be between 10 and 15 digits.");
+      return false;
+    }
+    return true;
+  }
+
+  function updateOrderSlip() {
+      orderItemsList.innerHTML = '';
+
+      if (orderItems.length === 0) {
+        orderItemsList.innerHTML = '<li>No items added yet.</li>';
+        orderTotalEl.textContent = 'Total: R0.00';
+        submitOrderBtn.disabled = true; // disable button when no items
+        return;
+      }
+    }
+
+  // Function 2: Calculate total price based on item and quantity
+  function calculateItemTotal(price, quantity) {
+    let total = price * quantity;
+    return total;
+    alert(`Thank you, ${name}!\n\nYour order for ${quantity} x ${item} at R${price.toFixed(2)} each has been received.\nTotal: R${total.toFixed(2)}\n\nWe'll contact you at ${phone} to confirm.`);
+
+  }
+
+  
+
+  // Function 3: Display order summary using alert
+  function showOrderSummary(name, phone, item, quantity, price) {
+    let total = calculateItemTotal(price, quantity);
+     submitOrderBtn.disabled = true;
+      
+    
+  }
+
+  // Function 4: Handle order submission and integrate all logic
+  function submitOrder(event) {
+    event.preventDefault(); // Prevent form reload
+
+    
+
+    // Local variables for form input
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const itemSelect = document.getElementById("item");
+    const quantity = parseInt(document.getElementById("quantity").value);
+    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+    const item = selectedOption.value;
+    const price = parseFloat(selectedOption.getAttribute("data-price"));
+
+    // Validate input
+    if (!validateCustomer(name, phone)) return;
+
+    if (!item || quantity < 1) {
+      alert("Please select a valid item and quantity.");
+      return;
+    }
+    // Show summary
+    showOrderSummary(name, phone, item, quantity, price);
+
+    // Log order (I/O)
+    console.log({
+      customerName: name,
+      phoneNumber: phone,
+      itemOrdered: item,
+      quantityOrdered: quantity,
+      priceEach: price,
+      totalPrice: calculateItemTotal(price, quantity)
+    });
+
+    // Reset form
+    document.getElementById("orderForm").reset();
+  }
+
+  // Link function to button event
+  document.getElementById("orderForm").addEventListener("submit", submitOrder);
+</script>
+</body>
+
+</html>
