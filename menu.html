@@ -80,26 +80,15 @@
   <footer>
     <p>&copy; 2025 Mahlatse's Dine Restaurant. All Rights Reserved.</p>
   </footer>
-
-
-
-
-
   <script>
-  // Function 1: Validate customer input
-  function validateCustomer(name, phone) {
-    if (name.trim() === "" || phone.trim() === "") {
-      alert("Please enter both your name and phone number.");
-      return false;
-    }
-    if (!/^\d{10,15}$/.test(phone)) {
-      alert("Phone number must be between 10 and 15 digits.");
-      return false;
-    }
-    return true;
-  }
+    const orderForm = document.getElementById('orderForm');
+    const orderItemsList = document.getElementById('orderItems');
+    const orderTotalEl = document.getElementById('orderTotal');
+    const submitOrderBtn = document.getElementById('submitOrderBtn');
 
-  function updateOrderSlip() {
+    let orderItems = [];
+
+    function updateOrderSlip() {
       orderItemsList.innerHTML = '';
 
       if (orderItems.length === 0) {
@@ -108,68 +97,92 @@
         submitOrderBtn.disabled = true; // disable button when no items
         return;
       }
+
+      let total = 0;
+      orderItems.forEach((item, index) => {
+        const li = document.createElement('li');
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        li.innerHTML = `
+      <span class="qty">${item.quantity}x</span> ${item.name} - R${item.price.toFixed(2)} each
+      <button class="remove-btn" title="Remove item" data-index="${index}">&times;</button>
+    `;
+
+        orderItemsList.appendChild(li);
+      });
+
+      orderTotalEl.textContent = `Total: R${total.toFixed(2)}`;
+      submitOrderBtn.disabled = false; // enable button when items exist
+
+      // Attach remove handlers to all remove buttons
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = e.target.getAttribute('data-index');
+          orderItems.splice(idx, 1);
+          updateOrderSlip();
+        });
+      });
     }
 
-  // Function 2: Calculate total price based on item and quantity
-  function calculateItemTotal(price, quantity) {
-    let total = price * quantity;
-    return total;
-    alert(`Thank you, ${name}!\n\nYour order for ${quantity} x ${item} at R${price.toFixed(2)} each has been received.\nTotal: R${total.toFixed(2)}\n\nWe'll contact you at ${phone} to confirm.`);
+    orderForm.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-  }
+      const selectedOption = this.item.options[this.item.selectedIndex];
+      const name = selectedOption.value;
+      const price = parseFloat(selectedOption.getAttribute('data-price'));
+      const quantity = parseInt(this.quantity.value);
 
-  
+      if (!name || quantity < 1) {
+        alert('Please select a valid item and quantity.');
+        return;
+      }
 
-  // Function 3: Display order summary using alert
-  function showOrderSummary(name, phone, item, quantity, price) {
-    let total = calculateItemTotal(price, quantity);
-     submitOrderBtn.disabled = true;
-      
-    
-  }
+      // Add or update existing item quantity
+      const existingIndex = orderItems.findIndex(item => item.name === name);
+      if (existingIndex !== -1) {
+        orderItems[existingIndex].quantity += quantity;
+      } else {
+        orderItems.push({ name, price, quantity });
+      }
 
-  // Function 4: Handle order submission and integrate all logic
-  function submitOrder(event) {
-    event.preventDefault(); // Prevent form reload
+      updateOrderSlip();
 
-    
-
-    // Local variables for form input
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const itemSelect = document.getElementById("item");
-    const quantity = parseInt(document.getElementById("quantity").value);
-    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-    const item = selectedOption.value;
-    const price = parseFloat(selectedOption.getAttribute("data-price"));
-
-    // Validate input
-    if (!validateCustomer(name, phone)) return;
-
-    if (!item || quantity < 1) {
-      alert("Please select a valid item and quantity.");
-      return;
-    }
-    // Show summary
-    showOrderSummary(name, phone, item, quantity, price);
-
-    // Log order (I/O)
-    console.log({
-      customerName: name,
-      phoneNumber: phone,
-      itemOrdered: item,
-      quantityOrdered: quantity,
-      priceEach: price,
-      totalPrice: calculateItemTotal(price, quantity)
+      // Reset select and quantity inputs only
+      this.item.selectedIndex = 0;
+      this.quantity.value = 1;
     });
 
-    // Reset form
-    document.getElementById("orderForm").reset();
-  }
+    submitOrderBtn.addEventListener('click', () => {
+      if (orderItems.length === 0) return;
 
-  // Link function to button event
-  document.getElementById("orderForm").addEventListener("submit", submitOrder);
-</script>
+      const customerName = orderForm.name.value.trim();
+      const customerPhone = orderForm.phone.value.trim();
+
+      if (!customerName || !customerPhone) {
+        alert('Please fill in your name and phone number before submitting the order.');
+        return;
+      }
+
+      // Create order summary text
+      let summary = `Order Summary for ${customerName} (Phone: ${customerPhone}):\n\n`;
+      orderItems.forEach(item => {
+        summary += `${item.quantity} x ${item.name} @ R${item.price.toFixed(2)} each = R${(item.price * item.quantity).toFixed(2)}\n`;
+      });
+
+      const totalPrice = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      summary += `\nTotal Price: R${totalPrice.toFixed(2)}`;
+
+      alert(summary + '\n\nThank you for your order!');
+
+      // Clear all after submission
+      orderItems = [];
+      updateOrderSlip();
+      orderForm.name.value = '';
+      orderForm.phone.value = '';
+    });
+
+  </script>
 </body>
 
 </html>
